@@ -1,0 +1,27 @@
+{
+  "slug": "coastal-flow-marine",
+  "version": "demo-2.0.0",
+  "displayName": "Coastal Flow Marine",
+  "disclaimer": "Unofficial demonstration based solely on publicly available information and simulated operational data. Not affiliated with or commissioned by Coastal Flow Marine.",
+  "demoScenarios": [
+    {"id": "complete", "label": "Complete routine", "fixture": "complete.json"},
+    {"id": "incomplete", "label": "Incomplete", "fixture": "incomplete.json"},
+    {"id": "emergency", "label": "Emergency handoff", "fixture": "emergency.json"},
+    {"id": "mock-boundary-failure", "label": "Mock failure", "fixture": "mock-boundary-failure.json"}
+  ],
+  "PUBLICLY_VERIFIED": {
+    "sources": ["https://coastalflowmarine.com/", "https://coastalflowmarine.com/services", "https://coastalflowmarine.com/infrastructure"],
+    "disciplines": ["Marine Utility Specialists", "Marina Repairs & Infrastructure"],
+    "serviceTaxonomy": {"infrastructure": {"label": "Marina Repairs & Infrastructure", "provenance": "PUBLICLY_VERIFIED"}, "utilities": {"label": "Marine Utility Specialists", "provenance": "PUBLICLY_VERIFIED"}, "unclassified": {"label": "Unclassified", "provenance": "EXAMPLE_SIMULATED"}},
+    "locationStatement": "The public website describes the company as Florida-based and says it travels for specialized projects; current availability is unknown."
+  },
+  "EXAMPLE_SIMULATED": {
+    "serviceKeywords": {"infrastructure": ["pile guide", "dock movement", "gangway", "decking", "dock hardware", "utility chase"], "utilities": ["water main", "water-main", "potable water", "sewer", "wastewater", "pump-out", "backflow", "valve", "hdpe", "pvc", "pex"]},
+    "urgentTerms": ["outage", "failure", "burst", "no water", "emergency", "active leak"],
+    "requiredFields": ["contactName", "organization", "email", "phone", "location", "preferredContact", "requestSummary"],
+    "usefulFields": ["photos", "siteAccess"],
+    "followupDelaySeconds": 15,
+    "timingLabel": "ACCELERATED DEMO TIMING — example policy, 15 seconds"
+  },
+  "PROSPECT_CONFIRMATION_REQUIRED": ["actual CRM", "inquiry source", "pricing", "availability", "estimating criteria", "sales stages", "response policy", "handoff owner"]
+}

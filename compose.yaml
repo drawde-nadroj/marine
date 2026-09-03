@@ -1,0 +1,26 @@
+services:
+  n8n:
+    image: n8nio/n8n@sha256:4fed2bb0f79c98a6c677b106cf91923c8b5898f0ce81d56061159f31db5b6da8
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      INTERNAL_SECRET: ${INTERNAL_SECRET:?set INTERNAL_SECRET in .env}
+      INTERNAL_SERVICE_URL: ${INTERNAL_SERVICE_URL:-http://host.docker.internal:18787}
+      N8N_HOST: 127.0.0.1
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_TEMPLATES_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_SECURE_COOKIE: "false"
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/demo-workflows:ro
+      - ./n8n/entrypoint.sh:/demo-entrypoint.sh:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    entrypoint: ["/bin/sh", "/demo-entrypoint.sh"]
+volumes:
+  n8n_data:

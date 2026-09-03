@@ -1,169 +1,127 @@
-# Coastal Flow marine inquiry intake demo
+# Reusable local business-automation demo
 
-A zero-dependency, local BUILD-mode demonstration. It shows how one unstructured marine-construction inquiry can become a transparent intake record without AI, external systems, or automated business commitments.
+A real local vertical slice turns simulated marine inquiries into durable leads and follow-up actions. n8n supplies real webhook and schedule orchestration. A zero-dependency Node TypeScript service owns all business behavior. SQLite is authoritative. Mock messaging terminates locally.
 
-> **These are example rules and sample data. The important part is that this same structure can be configured around the way your business actually works.**
+> **Unofficial demonstration based solely on publicly available information and simulated operational data. Not affiliated with or commissioned by Coastal Flow Marine.**
 
-## Business problem proved
+## Problem and running system
 
-Incoming project inquiries contain useful facts in prose. A person must classify the work, find gaps, decide what happens next, and recognize cases that require judgment. This demo makes those steps visible and repeatable while keeping emergency response, feasibility, pricing, and availability with a human.
+Unstructured inquiries require repetitive checks, routing, and follow-up. This demo proves a reusable transparent path without pretending to know private policy. The browser calls fixed same-origin endpoints. The Node service proxies only three fixed n8n webhooks. n8n calls secret-protected internal commands, visibly routes intake state, and responds. Node validates, normalizes, interprets, persists, claims, cancels, executes, and traces.
 
-The employee no longer has to remember to perform the first-pass intake checks because selecting a sample inquiry now triggers the same configured validation, classification, missing-field check, and handoff rule automatically. Connecting a real submission trigger is outside this demo.
-
-## Flow
-
-```text
-MOCKED inquiry
-  → deterministic validation and extraction
-  → REAL service-category match using EXAMPLE keyword rules
-  → EXAMPLE required/useful-field checks
-  → routine clarification preview OR HUMAN-REQUIRED emergency stop
-  → visible record and ordered trace (no send and no CRM write)
+```mermaid
+flowchart LR
+  UI[Static demo UI] -->|fixed /api/demo routes| Node[Node HTTP service]
+  Node -->|fixed webhook paths| N8N[n8n webhooks + schedule]
+  N8N -->|shared-secret commands| Domain[Node domain service]
+  Domain --> DB[(SQLite authority)]
+  Domain --> Mock[Local mock message adapter]
 ```
 
-## Prerequisites
+Deterministic rules are correct here because the demonstration needs repeatable, explainable evidence. AI would add uncertainty without a confirmed semantic requirement. `InquiryInterpreter` provides a narrow future seam; see [primitives](docs/primitives.md).
 
-- Python 3 for the local static server
-- Node.js 26 for tests
-- A modern browser
+## Setup, run, stop, reset, verify
 
-No package install, database, n8n, credential, external network request, or external service is needed. The page makes localhost requests only for its bundled files after the server starts.
-
-## Setup and run
-
-From this directory:
+Prerequisites: Node 26+, Docker Desktop/Compose, curl. Do not run `npm install`; there are no dependencies.
 
 ```bash
-python3 -m http.server 8000
+./scripts/setup.sh                # creates .env with a random secret when absent; starts n8n
+./scripts/start.sh                # foreground Node service; open http://127.0.0.1:18787
+npm run verify                    # while both services run
+./scripts/stop.sh
 ```
 
-Open `http://localhost:8000/`. Select **Routine repair inquiry** or **Emergency utility failure** as often as needed. Stop the server with `Ctrl-C`.
+Reset through the confirmed UI control, or `./scripts/reset.sh` while Node runs. A clean run is `./scripts/stop.sh --volumes`, remove ignored `data/`, then repeat setup/start. Runtime state stays in ignored `data/` and the Compose `n8n_data` volume.
 
-Opening `index.html` directly is unsupported because browsers restrict local JSON fetches. Use the server command above.
+The Node service and n8n published port bind to loopback. Docker Desktop n8n reaches the loopback-bound host service through `host.docker.internal`. All `/internal/*` routes require the shared secret and have a 64 KiB body limit. This is local-demo isolation, not production authentication.
 
-## Sample inputs and expected outcomes
+## Workflows
 
-### Routine repair inquiry
+Stable source exports live in `n8n/workflows/`:
 
-A mocked Harbor Point Marina request reports worn pile guides and unusual dock movement in St. Petersburg, Florida. Sender metadata and preferred contact are present.
+1. `coastal-intake-v1`: webhook → internal intake → visible Switch for ready, needs information, human, duplicate/fallback → response.
+2. `coastal-followup-schedule-v1`: every minute → atomic claim and local execution command.
+3. `coastal-followup-run-v1`: run-now webhook → the same claim/execution command → response.
+4. `coastal-customer-update-v1`: update webhook → state update/cancel command → response.
 
-Expected result:
+Human handoff remains an intake branch because it is one domain outcome, not an independently triggered process. The startup entrypoint imports stable IDs and activates all workflows. Re-import updates the same IDs rather than creating intended duplicates.
 
-- classification: `infrastructure`, with `pile guide`, `pile guides`, and `dock movement` exposed as matched terms;
-- required intake fields complete;
-- photos and site-access details shown as useful missing information;
-- final state: `INTAKE_READY_WITH_FOLLOW_UP`;
-- a clarification draft that makes no price, feasibility, or availability claim;
-- no handoff, send, or CRM write.
+## Persistence and safety
 
-### Emergency handoff
+Migration `db/migrations/001_initial.sql` creates foreign keys, schema version 1, and unique inquiry/follow-up keys. An identical `(prospect slug, external event ID)` replays one lead and creates no extra action/message. A changed payload under that key returns a conflict. Follow-ups move `PENDING → CLAIMED → EXECUTED|FAILED`; safe pending/claimed work can become `CANCELED`. Claims use `BEGIN IMMEDIATE`. Execution rechecks lead validity before the synchronous mock send, and a canceled claim cannot record a late completion. Customer information is accepted only for a `NEEDS_INFORMATION` lead with an active request-information action; emergency and already-ready leads reject that transition without mutation. The accelerated 15-second example policy is visibly labeled and `due_at` remains durable.
 
-A mocked Bay Haven Marina request reports a marina water-main failure and outage in Miami, Florida.
+## Real, mocked, unknown
 
-Expected result:
+- **REAL:** local n8n execution, deterministic Node rules, SQLite persistence, idempotency, claims, cancellation, trace.
+- **MOCKED:** all people, organizations, contact details, inquiries, policy, and message delivery. `DEMO_FAIL_MESSAGE` is explicit demo-only failure injection.
+- **UNKNOWN:** actual CRM/channel, pricing, feasibility, availability, response policy, sales stages, and handoff owner.
 
-- classification: `utilities`, with matched service and urgent terms exposed;
-- final state: `HUMAN_REQUIRED` under a clearly labeled **EXAMPLE DEMO RULE**;
-- automation stops and asks a qualified human to decide the response;
-- the note explicitly prohibits availability and feasibility promises;
-- message send and CRM write remain suppressed.
+`PROSPECT_SLUG` selects one validated server-side prospect. The client cannot choose the prospect. Safe scenario APIs expose only configured fixture IDs. `prospect.json` keeps the publicly sourced service taxonomy in `PUBLICLY_VERIFIED`; keyword mappings and all operational rules remain `EXAMPLE_SIMULATED`. `PROSPECT_CONFIRMATION_REQUIRED` records discovery gaps. Markdown under `knowledge/` is Obsidian-compatible human-maintained context, never transactional state. No runtime knowledge lookup is implemented because current deterministic rules do not need one.
 
-## REAL vs MOCKED vs UNKNOWN
+## Directory map
 
-### REAL — public business facts
+- `src/domain`, `interpreters`, `service`, `store`, `messaging`, `http` — reusable Node system
+- `db/migrations` — ordered SQLite schema
+- `n8n/workflows`, `compose.yaml` — orchestration and pinned runtime
+- `prospects/coastal-flow-marine` — config, fixtures, human knowledge
+- `public` — presentation shell using real workflows
+- `tests` — behavior and persistence regression suite
+- `docs/primitives.md` — actual reusable contracts
 
-The configuration and UI identify these as public facts supplied for the demo:
-
-- Coastal Flow Marine describes two disciplines: **Marine Utility Specialists** and **Marina Repairs & Infrastructure**.
-- Public services represented in the configuration include potable water systems and marina water mains; sewer/wastewater and pump-out piping; HDPE/PVC/PEX and specialty marine piping; backflow/valve systems; emergency water/sewer repairs; pile guide repair/replacement; gangway repair/replacement; decking/dock hardware; utility chase/piping; dock water/sewer connections; and marina maintenance/emergency repairs.
-- The public website describes the company as Florida-based and says it travels for specialized projects. This public service-area statement does not establish availability for a specific project. Public customer categories include marinas, yacht clubs, waterfront properties, marine contractors, municipalities, and commercial facilities.
-
-Sources (provided by the user and displayed in the app):
-
-- https://coastalflowmarine.com/
-- https://coastalflowmarine.com/services
-- https://coastalflowmarine.com/infrastructure
-
-No prospect logo or copied site asset is used.
-
-### MOCKED
-
-The inquiries, people, organizations, contact details, timestamps, intake record, draft, CRM boundary, message boundary, and execution result are sample demo data. `.example` email domains and `555` telephone numbers reinforce this boundary. No side effect exists.
-
-### UNKNOWN
-
-The actual CRM, inbox/form, pricing, availability, estimating criteria, internal sales stages, and response policy require business discovery. The demo does not infer them.
-
-## Configuration points
-
-Edit `config/business-rules.json` to demonstrate a confirmed process:
-
-- `publicBusinessFacts` contains **REAL** sourced facts.
-- `exampleDemoRules.serviceKeywords` maps explicit terms to service groups.
-- `requiredFields` and `usefulProjectFields` control gap checks.
-- `urgentTerms` and `handoff` control the **EXAMPLE DEMO RULE** stop.
-- `unknownOperationalData` keeps discovery gaps visible.
-- `version` changes the visible rule version and deterministic correlation ID.
-
-Keep public facts separate from example policy. A production configuration should be approved and maintained by the business owner.
-
-## Verification
-
-Run the automated checks:
+Create only the proven minimum prospect contract:
 
 ```bash
-node --test
-# or: npm test
+npm run new-demo -- --slug=serenity-spa
 ```
 
-The tests cover routine classification, useful missing information, absence of handoff, emergency classification, mandatory human handoff, absence of an availability promise and side effects, malformed input, and deterministic repeatability.
+It rejects invalid/existing slugs and creates a minimum runnable contract: config with `demoScenarios`, one clearly synthetic fixture, and a knowledge README. Select it by changing `PROSPECT_SLUG`; generic UI code needs no edit.
 
-For a browser smoke check:
+## Reusability classification
 
-1. Start `python3 -m http.server 8000`.
-2. Open `http://localhost:8000/`.
-3. Confirm the routine example shows `INTAKE READY WITH FOLLOW UP` and missing photos/site access.
-4. Confirm the emergency example shows `HUMAN REQUIRED`, an automation stop, and `CRM write: NO • Message sent: NO`.
-5. Switch back and confirm the same correlation ID and ordered result return.
-6. Narrow the viewport and confirm cards stack, buttons remain reachable by keyboard, and focus is visible.
+- **GENERIC/REUSABLE:** HTTP boundary, SQLite schema/transactions, idempotency, scheduled action lifecycle, traces, mock adapter, n8n trigger/command shape.
+- **INDUSTRY-SPECIFIC:** intake vocabulary and candidate fields.
+- **COASTAL-FLOW-SPECIFIC:** public marine service labels and sources, simulated keyword mappings, and presentation language.
+- **DEMO-ONLY:** 15-second policy, fixtures, reset, failure marker, mock delivery.
 
-## 30–90 second prospect-facing narrative
+For a spa, real-estate agent, contractor, law firm, or service business, reuse the generic runtime and replace the prospect contract, fixtures, knowledge, approved classifications, required fields, urgent rules, and handoff policy. Do not infer those decisions.
 
-| Step | What to show | What to say | Business problem demonstrated |
+## Demo narratives
+
+### 30-second version
+
+| Step | What to show | What to say | Do not explain unless asked |
 |---|---|---|---|
-| 1 | Boundary legend and central message | “This uses public facts, sample inquiries, and example policy. The structure is configurable to your process.” | Honest scope and low integration risk |
-| 2 | Routine inquiry | “A marina describes worn pile guides and dock movement in normal email-style prose.” | Unstructured intake |
-| 3 | Extracted fields and matched terms | “The same deterministic rules copy known fields and show exactly why this maps to infrastructure work.” | Repetitive classification and transcription |
-| 4 | Missing information and intake record | “Required contact data is ready, while photos and site access remain visible follow-ups.” | Incomplete inquiries and inconsistent checks |
-| 5 | Draft and trace | “The next step is a preview only. Every step has an event ID and rule version.” | Auditability without premature automation |
-| 6 | Emergency example | “An outage matches an example urgent rule, stops automation, and sends nothing. A human owns the response.” | Unsafe commitments and exception handling |
+| 1 | Before → After and boundary legend | “Today, someone reads, classifies, copies, and remembers. Here, the inquiry itself starts a real local workflow. The inquiry and delivery are simulated.” | Docker, node versions, SQLite tables |
+| 2 | Select **Incomplete**; point to Rules and Missing information | “n8n invokes deterministic rules configured for this example. The system shows what matched and what is still missing.” | Keyword implementation |
+| 3 | Persisted lead and pending follow-up | “It stores one durable next action instead of relying on memory. These are example rules and sample data; the structure is configurable to the real business.” | Workflow import mechanics |
 
-## Prospect-specific details used
+### 60-second version
 
-- The two public discipline names.
-- The public marine utility and marina infrastructure service families.
-- Florida base, travel statement, and public customer categories.
-- Marine-specific sample language: pile guides, dock movement, marina water main, valve, occupied slips, and site access.
+| Step | What to show | What to say | Do not explain unless asked |
+|---|---|---|---|
+| 1 | Disclaimer, boundaries, and Before → After | “This is unofficial, uses public business context, and connects to no prospect system.” | Container networking |
+| 2 | Select **Incomplete** | “The real local webhook validates the inquiry, classifies the service, and identifies the missing phone, photos, and site access.” | TypeScript syntax |
+| 3 | Follow-up and execution history | “SQLite stores the lead and a due follow-up. n8n handles when the next workflow runs; Node owns what the rule means.” | SQL schema |
+| 4 | Select **Resubmit same event** | “A duplicate replays the existing result. It does not create another lead, follow-up, or message.” | Hash algorithm |
+| 5 | Select **Mark information received**, then **Run scheduler now** | “When customer state changes, the old follow-up is canceled. The scheduler finds nothing valid to execute.” | Claim leases unless asked about reliability |
 
-## Reusable assets
+### 2-minute technical version
 
-- **Generally reusable:** deterministic engine shape, validation, missing-field checks, trace, side-effect suppression, fixture runner, responsive presentation shell.
-- **Industry-specific:** marine inquiry field vocabulary and service keyword model.
-- **Customer-specific:** public facts, approved keywords, required fields, urgent policy, handoff owner, response language, and system adapters.
+| Step | What to show | What to say | Do not explain unless asked |
+|---|---|---|---|
+| 1 | Architecture diagram in this README, then the UI | “The browser enters through fixed n8n webhooks. n8n orchestrates. The Node service owns deterministic rules and transitions. SQLite owns transactional state.” | Production scaling |
+| 2 | Select **Complete routine** | “A complete pile-guide inquiry becomes intake-ready with its public service category and simulated matching rule shown separately.” | Hypothetical CRM mapping |
+| 3 | Reset; select **Incomplete**; wait 15 seconds; run scheduler | “Missing information creates a real due action. The run-now webhook claims it once, terminates at the mock adapter, and records a simulated message event.” | Actual email providers |
+| 4 | Refresh the page | “The lead, action status, and persistent execution history survive refresh because the browser is not the state owner.” | SQLite internals |
+| 5 | Reset; select **Incomplete**; mark information received; run scheduler | “A valid state change cancels obsolete work. The scheduler cannot send it later.” | Transaction statements |
+| 6 | Select **Emergency handoff** | “Example urgency terms force a human-owned route. No follow-up is scheduled, and the update action is not valid for this state.” | Imagined emergency policy |
+| 7 | Reset; select **Mock failure**; after 15 seconds run scheduler | “A failed boundary becomes durable evidence instead of an assumed success. Nothing leaves the machine.” | Retry infrastructure not built here |
 
-## What not to show or claim
+Never show or claim a real send, CRM write, private access, prospect approval, availability, price, feasibility, AI capability, or production readiness.
 
-Do not present the draft as sent, the intake record as a real CRM record, or the example rules as Coastal Flow Marine policy. Do not claim pricing, feasibility, availability, response time, production readiness, private access, AI capability, or integration support. Do not open developer tooling during the short prospect narrative unless technical evidence is requested.
+## Production bridge and limitations
 
-## Limitations
+Discovery must confirm source contracts, fields, retention/privacy, urgent procedure, owners, response policy, and adapters. Production needs authenticated network boundaries, least privilege, reconciliation, retries, monitoring, backups, secret management, and approved messages. This local demo has one process, one SQLite file, local shared-secret trust, simple phrase matching, no account model, and no actual external adapter.
 
-- Deterministic phrase matching handles only configured wording. It is intentionally not semantic AI extraction.
-- Fixture metadata supplies contact fields; the engine does not parse arbitrary email headers or attachments.
-- The demo has no authentication, persistence, deduplication store, inbox listener, CRM adapter, send adapter, monitoring, or business-approved policy.
-- The trace is generated locally and is not a production audit log.
-- Browser interaction is a preview. Refreshing loses all state.
+## Portfolio / LinkedIn readiness
 
-## Concise production bridge
-
-After discovery and separate authorization, map the real inquiry source and CRM contracts; obtain business approval for fields, service mappings, urgent criteria, response policy, and handoff ownership; add schema validation at each external boundary; persist idempotency and audit state; authenticate least-privilege adapters; verify writes and sends from authoritative responses; and add retry, reconciliation, monitoring, privacy, and operational tests. Keep high-impact emergency, feasibility, price, and availability decisions human-owned unless the business establishes an authoritative decision source and explicit authorization.
-# marine
+Appropriate claim: “Built a local reusable automation demo with n8n orchestration, a Node-owned deterministic domain layer, SQLite idempotency/state transitions, and simulated delivery.” Include the disclaimer. Avoid performance, customer-impact, affiliation, AI, or production claims.

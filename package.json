@@ -1,6 +1,1 @@
-{
-  "name": "coastal-flow-intake-demo",
-  "private": true,
-  "type": "module",
-  "scripts": {"test": "node --test", "serve": "python3 -m http.server 8000"}
-}
+{"name":"local-business-automation-demo","private":true,"type":"module","scripts":{"start":"./scripts/load-env.sh node src/http/server.ts","stop":"docker compose down","n8n":"docker compose up -d","test":"node --test tests/*.test.ts","verify":"./scripts/verify.sh","new-demo":"node scripts/new-demo.ts"},"engines":{"node":">=26"}}

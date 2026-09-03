@@ -1,0 +1,96 @@
+{
+  "id": "coastal-followup-run-v1",
+  "name": "Demo \u2014 Follow-up Run Now",
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "demo-followups-run",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "run-now-webhook",
+      "name": "Run Now Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "wh-coastal-followup-run-v1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.INTERNAL_SERVICE_URL }}/internal/followups/run",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-internal-secret",
+              "value": "={{ $env.INTERNAL_SECRET }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json.body || {}) }}",
+        "options": {}
+      },
+      "id": "claim-and-execute-due",
+      "name": "Claim and Execute Due",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "respond-to-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        500,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Run Now Webhook": {
+      "main": [
+        [
+          {
+            "node": "Claim and Execute Due",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim and Execute Due": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "versionId": "coastal-followup-run-v1-version"
+}

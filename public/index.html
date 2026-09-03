@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Business inquiry automation demo</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="hero">
+      <div>
+        <p
+          class="eyebrow"><span id="prospectName">LOCAL DEMO</span> • DETERMINISTIC • REAL ORCHESTRATION</p>
+        <h1>Inquiry → durable next action</h1>
+        <p>See intake, idempotency, human routing, and safe follow-up run through n8n and a Node-owned domain service.</p>
+      </div>
+      <div
+        class="boundary"><strong>Boundary legend</strong><span><b class="real">REAL</b> Local workflow + SQLite</span><span><b class="mock">MOCKED</b> Inquiry + message boundary</span><span><b class="unknown">UNKNOWN</b> Requires discovery</span></div>
+    </header>
+    <main>
+      <section
+        class="message"><strong id="disclaimer">Loading prospect boundary…</strong></section>
+      <section>
+        <p class="kicker">Before → after</p>
+        <div class="two">
+          <article>
+            <h2>Before</h2>
+            <p>A person reads the inquiry, classifies it, notices gaps, copies details, decides what happens next, and remembers to follow up.</p>
+          </article>
+          <article>
+            <h2>After</h2>
+            <p>The inquiry triggers a workflow that validates, classifies, records gaps, chooses a route, and persists the next action with a durable due time.</p>
+          </article>
+        </div>
+      </section>
+      <section>
+        <div class="section-head">
+          <div>
+            <p class="kicker">Run the real local workflow</p>
+            <h2>Scenario controls</h2>
+          </div>
+          <div id="scenarios" class="controls"></div>
+        </div>
+        <p id="status" class="status" aria-live="polite">Ready.</p>
+        <div
+          class="controls"><button id="duplicate" disabled>Resubmit same event (duplicate)</button><button id="run">Run scheduler now</button><button id="received" disabled>Mark information received</button><button id="reset">Reset local demo</button></div>
+      </section>
+      <div id="results" hidden>
+        <section class="overview">
+          <article><span class="label mock">MOCKED INPUT</span><h2>Original inquiry</h2><pre id="original"></pre></article>
+          <article
+            class="state-card"><span class="label real">PERSISTED SQLITE STATE</span><h2 id="state"></h2><p id="duplicateStatus"></p><p id="action"></p><dl id="ids"></dl></article>
+        </section>
+        <section>
+          <h2>What happened</h2>
+          <div class="three">
+            <article>
+              <h3>Extracted info</h3>
+              <pre id="extracted"></pre>
+            </article>
+            <article>
+              <h3>Rules applied</h3>
+              <pre id="rules"></pre>
+            </article>
+            <article>
+              <h3>Missing information</h3>
+              <pre id="missing"></pre>
+            </article>
+          </div>
+        </section>
+        <section class="two">
+          <article>
+            <h2>Follow-up</h2>
+            <pre id="followup"></pre>
+            <p><span class="label example">EXAMPLE / SIMULATED</span> <span id="timingLabel">Loading configured example timing…</span> The authoritative <code>due_at</code> is stored in SQLite.</p>
+          </article>
+          <article>
+            <h2>Execution trace</h2>
+            <ol id="trace" class="trace"></ol>
+            <h3>Persistent execution history</h3>
+            <pre id="history"></pre>
+          </article>
+        </section>
+      </div>
+      <section>
+        <p class="kicker">Persists after refresh</p>
+        <h2>Recent leads</h2>
+        <div id="recent"></div>
+      </section>
+      <section>
+        <div class="three">
+          <article><span class="label real">REAL</span><h3>Local system</h3><p>n8n triggers/routes; Node owns rules and transitions; SQLite owns records.</p></article>
+          <article><span class="label mock">MOCKED</span><h3>Safe boundary</h3><p>Names, contact details, operational policy, and message delivery are simulated.</p></article>
+          <article><span class="label unknown">UNKNOWN</span><h3>Discovery required</h3><p>Actual CRM, channels, policy, owners, pricing, feasibility, and availability.</p></article>
+        </div>
+      </section>
+    </main>
+    <footer>Demo only. No external system or real message adapter is connected.</footer>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

@@ -1,9 +1,0 @@
-{
-  "eventId": "inquiry-marina-2097",
-  "receivedAt": "2026-02-18T16:05:00Z",
-  "sender": {"name":"Marcus Lee", "organization":"Bay Haven Marina", "email":"marcus@bayhaven.example", "phone":"(305) 555-0191"},
-  "location": "Miami, Florida",
-  "preferredContact": "phone",
-  "subject": "Water-main outage on west dock",
-  "message": "Our west dock has no water after an apparent marina water-main failure. Staff shut the nearest valve, but the outage affects occupied slips. Please call me. We need an emergency assessment. Site access is through the west service gate; photos are available."
-}
