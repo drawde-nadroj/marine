@@ -1,0 +1,9 @@
+{
+  "eventId": "inquiry-marina-1042",
+  "receivedAt": "2026-02-18T14:20:00Z",
+  "sender": {"name":"Elena Ruiz", "organization":"Harbor Point Marina", "email":"elena@harborpoint.example", "phone":"(727) 555-0148"},
+  "location": "St. Petersburg, Florida",
+  "preferredContact": "email",
+  "subject": "Worn pile guides and dock movement",
+  "message": "Several pile guides on C dock look worn, and the dock shifts more than usual when boats pass. We would like someone to review repair or replacement options. The marina remains open. Please contact me by email. I can coordinate a walkthrough next week."
+}

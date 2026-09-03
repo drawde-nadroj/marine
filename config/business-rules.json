@@ -1,0 +1,30 @@
+{
+  "version": "demo-1.0.0",
+  "publicBusinessFacts": {
+    "type": "REAL",
+    "sources": [
+      "https://coastalflowmarine.com/",
+      "https://coastalflowmarine.com/services",
+      "https://coastalflowmarine.com/infrastructure"
+    ],
+    "disciplines": ["Marine Utility Specialists", "Marina Repairs & Infrastructure"],
+    "customerTypes": ["marinas", "yacht clubs", "waterfront properties", "marine contractors", "municipalities", "commercial facilities"],
+    "serviceGroups": [
+      {"id":"infrastructure", "label":"Marina Repairs & Infrastructure", "services":["pile guide repair/replacement","gangway repair/replacement","decking/dock hardware","utility chase/piping","dock water/sewer connections","marina maintenance/emergency repairs"]},
+      {"id":"utilities", "label":"Marine Utility Specialists", "services":["potable water systems and marina water mains","sewer/wastewater and pump-out piping","HDPE/PVC/PEX and specialty marine piping","backflow/valve systems","emergency water/sewer repairs"]}
+    ],
+    "locationStatement": "The public website describes the company as Florida-based and says it travels for specialized projects; current project availability is unknown"
+  },
+  "exampleDemoRules": {
+    "type": "EXAMPLE DEMO RULE",
+    "serviceKeywords": {
+      "infrastructure": ["pile guide", "pile guides", "dock movement", "gangway", "decking", "dock hardware", "utility chase"],
+      "utilities": ["water main", "water-main", "potable water", "sewer", "wastewater", "pump-out", "backflow", "valve", "hdpe", "pvc", "pex"]
+    },
+    "urgentTerms": ["outage", "failure", "burst", "no water", "emergency", "active leak"],
+    "requiredFields": ["contactName", "organization", "email", "phone", "location", "preferredContact", "requestSummary"],
+    "usefulProjectFields": ["photos", "siteAccess"],
+    "handoff": {"urgentRequiresHuman": true, "suppressSideEffects": true, "availabilityPromiseAllowed": false}
+  },
+  "unknownOperationalData": ["actual CRM", "inbox/form", "pricing", "availability", "estimating criteria", "internal sales stages", "response policy"]
+}
